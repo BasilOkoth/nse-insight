@@ -1,6 +1,6 @@
 # NSE Insight
 
-A private, evidence-led dashboard for analysing Nairobi Securities Exchange shares with free end-of-day data. It automatically retrieves the public NSE market-statistics tables, records daily history through GitHub Actions, and ranks shares using a balanced model weighted toward long-term financial quality, valuation and dividends.
+A private Django investment-research platform for analysing Nairobi Securities Exchange shares with free end-of-day data. It automatically retrieves the public NSE market-statistics tables, records daily history through GitHub Actions, and ranks shares using a balanced model weighted toward long-term financial quality, valuation and dividends.
 
 ## Features
 
@@ -28,17 +28,17 @@ A private, evidence-led dashboard for analysing Nairobi Securities Exchange shar
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-streamlit run app.py
+python manage.py runserver
 ```
 
-The dashboard will open in your browser. It runs locally; the imported portfolio and research data are not sent to a custom server by this project.
+Open `http://127.0.0.1:8000`. The application runs locally; portfolio and research data are not sent to a custom server by this project.
 
 ## Deploy on Render through GitHub
 
 1. Upload the contents of this folder to a GitHub repository.
 2. In GitHub, open **Actions**, enable workflows, and run **Update NSE market history** once.
 3. In Render, choose **New → Blueprint**, connect the repository and approve `render.yaml`.
-4. Render will install the requirements and start the Streamlit application automatically.
+4. Render will install the requirements, collect static assets and start the Django application automatically.
 
 The GitHub Action runs after NSE trading on weekdays and commits both the latest snapshot and accumulated history to the repository. Render therefore loads quickly without relying on its temporary free-tier filesystem. A manual refresh button can check NSE directly.
 
