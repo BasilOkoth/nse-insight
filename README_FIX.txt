@@ -1,37 +1,20 @@
-NSE Insight - Runtime Isolation Fix
+NSE Insight CSRF Fix
 
-Why this second fix exists
---------------------------
-The /health/ endpoint is now returning HTTP 200, but Gunicorn workers still
-exit with code 139 (SIGSEGV) a few seconds later. That means the lightweight
-Django health endpoint itself is working, while the process hosting it is
-crashing at the server/runtime layer.
+The latest Render log confirms the Waitress service is live.
 
-This package therefore makes two targeted changes:
+The remaining functional error is:
+Forbidden (Origin checking failed - https://nse-insight.onrender.com does not match any trusted origins.): /refresh/
 
-1. Pin Render to Python 3.13.15 instead of relying on the platform default.
-2. Replace Gunicorn with Waitress 3.0.2 for this deployment.
+Replace:
+nse_insight/settings.py
 
-Waitress is a pure-Python WSGI server, which removes Gunicorn's forked worker
-process from the equation and gives us a clean diagnostic path.
+This patch adds:
+- CSRF_TRUSTED_ORIGINS with https://nse-insight.onrender.com
+- support for an optional CSRF_TRUSTED_ORIGINS environment variable
+- automatic trust of Render's RENDER_EXTERNAL_HOSTNAME when available
 
-Replace these files in the repository:
-- requirements.txt
-- render.yaml
+The favicon.ico 404 is harmless.
 
-Add this new file at the repository root:
-- .python-version
-
-Keep the previous /health/ and lazy-import changes already made to:
-- nse_insight/urls.py
-- market/views.py
-
-Then commit/push and redeploy on Render.
-
-Expected healthy behavior:
-- /health/ returns 200
-- no repeating "Worker ... was sent code 139!" lines
-- the service remains listening on $PORT
-
-If the service stays up but only crashes when opening the dashboard, the next
-target is the Pandas/NumPy/lxml analytics stack rather than the web server.
+Do not treat the old "Worker ... code 139" lines before the Waitress handover as
+evidence that the new Waitress process is crashing. The log shows the old
+Gunicorn master was terminated while the new Waitress service came live.
