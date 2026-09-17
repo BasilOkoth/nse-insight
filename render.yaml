@@ -3,12 +3,25 @@ services:
     name: nse-insight
     runtime: python
     plan: free
+
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    startCommand: gunicorn nse_insight.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
-    healthCheckPath: /
+
+    startCommand: gunicorn nse_insight.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 1 --timeout 120 --max-requests 200 --max-requests-jitter 30
+
+    healthCheckPath: /health/
+
     autoDeploy: true
+
     envVars:
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
         value: "0"
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: OPENBLAS_NUM_THREADS
+        value: "1"
+      - key: MKL_NUM_THREADS
+        value: "1"
+      - key: NUMEXPR_NUM_THREADS
+        value: "1"
