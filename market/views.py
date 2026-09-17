@@ -59,6 +59,7 @@ def stock_screener(request):
 def stock_detail(request, ticker):
     from .services import records
     from analysis_engine import WEIGHTS
+    from .decision_support import decision_brief
 
     results, context = _context()
     match = results[results["ticker"] == ticker]
@@ -67,8 +68,16 @@ def stock_detail(request, ticker):
         raise Http404("Stock not found")
 
     stock = records(match)[0]
+
+    try:
+        amount = max(1000, float(request.GET.get("amount", 100000)))
+    except (TypeError, ValueError):
+        amount = 100000
+
     context.update({
         "stock": stock,
+        "brief": decision_brief(stock, amount),
+        "amount": amount,
         "factors": [
             {
                 "name": name.title(),
@@ -79,6 +88,52 @@ def stock_detail(request, ticker):
         ],
     })
     return render(request, "market/stock_detail.html", context)
+
+
+def compare_stocks(request):
+    from .services import records
+    from .decision_support import compare_briefs
+
+    results, context = _context()
+    all_stocks = records(results)
+
+    ticker_a = request.GET.get("a", "").strip()
+    ticker_b = request.GET.get("b", "").strip()
+
+    evidence_ready = results[results["data_completeness_pct"] >= 55]
+    defaults = evidence_ready.head(2) if len(evidence_ready) >= 2 else results.head(2)
+
+    if not ticker_a and len(defaults) >= 1:
+        ticker_a = str(defaults.iloc[0]["ticker"])
+    if not ticker_b and len(defaults) >= 2:
+        ticker_b = str(defaults.iloc[1]["ticker"])
+
+    stock_a = None
+    stock_b = None
+    comparison = None
+
+    if ticker_a:
+        match_a = results[results["ticker"] == ticker_a]
+        if not match_a.empty:
+            stock_a = records(match_a)[0]
+
+    if ticker_b:
+        match_b = results[results["ticker"] == ticker_b]
+        if not match_b.empty:
+            stock_b = records(match_b)[0]
+
+    if stock_a and stock_b and ticker_a != ticker_b:
+        comparison = compare_briefs(stock_a, stock_b)
+
+    context.update({
+        "stocks": all_stocks,
+        "selected_a": ticker_a,
+        "selected_b": ticker_b,
+        "stock_a": stock_a,
+        "stock_b": stock_b,
+        "comparison": comparison,
+    })
+    return render(request, "market/compare.html", context)
 
 
 def portfolio(request):

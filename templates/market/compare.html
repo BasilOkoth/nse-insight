@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Compare Stocks · NSE Insight{% endblock %}
+{% block heading %}Compare stocks{% endblock %}
+{% block content %}
+<section class="page-intro reveal"><div><span class="kicker">A VS B, EXPLAINED</span><h2>See which company has the stronger evidence-backed case — and why.</h2><p>The comparison focuses on where each stock wins, where it is weak, and whether the evidence is complete enough for the comparison to be meaningful.</p></div></section>
+
+<form method="get" class="compare-builder premium-card reveal">
+  <div class="compare-select"><label>STOCK A</label><select name="a">{% for s in stocks %}<option value="{{ s.ticker }}" {% if s.ticker == selected_a %}selected{% endif %}>{{ s.company }}</option>{% endfor %}</select></div>
+  <div class="vs-orb">VS</div>
+  <div class="compare-select"><label>STOCK B</label><select name="b">{% for s in stocks %}<option value="{{ s.ticker }}" {% if s.ticker == selected_b %}selected{% endif %}>{{ s.company }}</option>{% endfor %}</select></div>
+  <button class="button button-primary">Run comparison</button>
+</form>
+
+{% if comparison %}
+<section class="comparison-verdict tone-{{ comparison.tone }} premium-card reveal"><span class="kicker">MODEL COMPARISON</span><h2>{{ comparison.model_edge }}</h2><p>{{ comparison.summary }}</p><small>This is an evidence-backed model comparison, not a personal instruction to trade.</small></section>
+
+<section class="duel-grid reveal">
+  <article class="duel-card premium-card"><span class="duel-label">STOCK A</span><h2>{{ stock_a.company }}</h2><div class="duel-score">{{ stock_a.overall_score }}</div><span class="signal-badge">{{ stock_a.signal }}</span><p>{{ comparison.a.headline }}</p><div class="duel-meta"><span>Confidence <b>{{ comparison.a.confidence.label }}</b></span><span>Evidence <b>{{ stock_a.data_completeness_pct|floatformat:0 }}%</b></span></div><a class="text-link" href="{% url 'market:stock_detail' stock_a.ticker %}">Open full analysis →</a></article>
+  <article class="duel-card premium-card"><span class="duel-label">STOCK B</span><h2>{{ stock_b.company }}</h2><div class="duel-score">{{ stock_b.overall_score }}</div><span class="signal-badge">{{ stock_b.signal }}</span><p>{{ comparison.b.headline }}</p><div class="duel-meta"><span>Confidence <b>{{ comparison.b.confidence.label }}</b></span><span>Evidence <b>{{ stock_b.data_completeness_pct|floatformat:0 }}%</b></span></div><a class="text-link" href="{% url 'market:stock_detail' stock_b.ticker %}">Open full analysis →</a></article>
+</section>
+
+<section class="panel premium-card reveal"><div class="panel-head"><div><span class="kicker">WHERE EACH COMPANY WINS</span><h2>Factor-by-factor advantage</h2></div></div><div class="comparison-factor-list">{% for f in comparison.factors %}<div class="comparison-factor"><span>{{ f.name }}</span><div class="comparison-bars"><div class="bar-a"><i style="width:{{ f.a }}%"></i><b>{{ f.a }}</b></div><div class="bar-b"><i style="width:{{ f.b }}%"></i><b>{{ f.b }}</b></div></div><strong>{% if f.edge == 'A' %}A{% elif f.edge == 'B' %}B{% else %}≈{% endif %}</strong></div>{% endfor %}</div><div class="compare-legend"><span><i class="legend-a"></i>{{ stock_a.company }}</span><span><i class="legend-b"></i>{{ stock_b.company }}</span></div></section>
+
+<section class="story-grid reveal"><article class="panel premium-card positive-panel"><span class="kicker">CASE FOR A</span><h2>Why {{ stock_a.company }} may be stronger</h2>{% for item in comparison.a.why %}<div class="reason-card"><div><b>{{ item.factor }}</b><span>{{ item.score }}/100</span></div><p>{{ item.explanation }}</p></div>{% endfor %}</article><article class="panel premium-card positive-panel"><span class="kicker">CASE FOR B</span><h2>Why {{ stock_b.company }} may be stronger</h2>{% for item in comparison.b.why %}<div class="reason-card"><div><b>{{ item.factor }}</b><span>{{ item.score }}/100</span></div><p>{{ item.explanation }}</p></div>{% endfor %}</article></section>
+
+<section class="story-grid reveal"><article class="panel premium-card caution-panel"><span class="kicker">WHAT CAN GO WRONG WITH A</span><h2>Risks to the case</h2>{% for item in comparison.a.reasons_to_wait %}<div class="reason-card"><div><b>{{ item.factor }}</b></div><p>{{ item.explanation }}</p></div>{% endfor %}</article><article class="panel premium-card caution-panel"><span class="kicker">WHAT CAN GO WRONG WITH B</span><h2>Risks to the case</h2>{% for item in comparison.b.reasons_to_wait %}<div class="reason-card"><div><b>{{ item.factor }}</b></div><p>{{ item.explanation }}</p></div>{% endfor %}</article></section>
+{% else %}<section class="empty-state large premium-card"><b>Select two different stocks</b><span>Choose Stock A and Stock B above to generate a plain-English comparison.</span></section>{% endif %}
+{% endblock %}

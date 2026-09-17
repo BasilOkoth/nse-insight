@@ -6,6 +6,7 @@ urlpatterns = [
     path("", views.dashboard, name="dashboard"),
     path("stocks/", views.stock_screener, name="stocks"),
     path("stocks/<str:ticker>/", views.stock_detail, name="stock_detail"),
+    path("compare/", views.compare_stocks, name="compare"),
     path("portfolio/", views.portfolio, name="portfolio"),
     path("methodology/", views.methodology, name="methodology"),
     path("refresh/", views.refresh_market, name="refresh"),

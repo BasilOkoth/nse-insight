@@ -1,51 +1,12 @@
 {% extends 'base.html' %}
-{% block title %}Methodology · NSE Insight{% endblock %}
-{% block heading %}Methodology{% endblock %}
+{% block title %}Model Logic · NSE Insight{% endblock %}
+{% block heading %}Model logic{% endblock %}
 {% block content %}
-<section class="panel">
-  <p class="eyebrow">EVIDENCE-FIRST MODEL</p>
-  <h2>Prices update automatically; fundamentals require a source record.</h2>
-  <p>
-    NSE Insight separates market data from company fundamentals. Market prices and
-    volumes can be refreshed from the NSE market-statistics pages. Fundamental
-    evidence is only admitted when a row includes a financial period and an HTTPS
-    source document.
-  </p>
-</section>
+<section class="method-hero premium-card reveal"><span class="kicker">HOW NSE INSIGHT THINKS</span><h2>A transparent model, not a black box.</h2><p>Market data tells us what the share price is doing. Company fundamentals tell us what the business is doing. NSE Insight combines the two, but it reduces confidence when verified evidence is missing.</p><div class="method-flow"><span>Official market data</span><i>→</i><span>Verified company results</span><i>→</i><span>Derived ratios</span><i>→</i><span>Factor scores</span><i>→</i><span>Plain-English model view</span></div></section>
 
-<section class="panel">
-  <p class="eyebrow">FUNDAMENTAL PIPELINE</p>
-  <h2>Verified report → derived ratios → score</h2>
-  <p>
-    The verified input file stores report facts such as EPS, book value per share,
-    profit, revenue, equity, EBIT, finance cost and dividends. The build script
-    derives ratios including P/E, P/B, ROE, margin, interest cover, dividend yield,
-    payout ratio and growth. P/E, P/B and dividend yield are recalculated using the
-    latest saved NSE price.
-  </p>
-</section>
+<section class="panel premium-card reveal"><div class="panel-head"><div><span class="kicker">WEIGHTING</span><h2>What matters most</h2><p>The model is deliberately tilted toward long-term financial strength rather than short-term excitement.</p></div></div><div class="weight-cards">{% for w in weights %}<article class="weight-card"><div class="weight-ring" style="--score:{{ w.value }}"><span>{{ w.value }}%</span></div><div><b>{{ w.name }}</b><p>{% if w.name == 'Quality' %}Profitability and financial strength.{% elif w.name == 'Value' %}What you are paying for earnings and equity.{% elif w.name == 'Dividend' %}Yield, history and sustainability.{% elif w.name == 'Momentum' %}Medium-term price behaviour.{% elif w.name == 'Growth' %}Revenue and earnings direction.{% elif w.name == 'Liquidity' %}How easily shares trade.{% else %}Volatility and drawdown behaviour.{% endif %}</p></div></article>{% endfor %}</div></section>
 
-<section class="factor-grid">
-  <div class="panel">
-    <p class="eyebrow">FACTOR WEIGHTS</p>
-    <h2>How the score is constructed</h2>
-    {% for w in weights %}
-      <div class="factor">
-        <span>{{ w.name }}</span>
-        <b>{{ w.value }}%</b>
-        <i style="--score:{{ w.value }}%"></i>
-      </div>
-    {% endfor %}
-  </div>
-  <div class="panel">
-    <p class="eyebrow">GUARDRAILS</p>
-    <h2>Evidence before a signal</h2>
-    <p>
-      Incomplete evidence is not treated as certainty. Securities with weak
-      fundamentals coverage remain classified as insufficient evidence even when
-      market-price information is available. Governance flags can also override
-      an otherwise strong quantitative score.
-    </p>
-  </div>
-</section>
+<section class="story-grid reveal"><article class="panel premium-card"><span class="kicker">FUNDAMENTAL PIPELINE</span><h2>Verified report → ratios → score</h2><p>The verified input stores facts such as EPS, book value, profit, revenue, equity, EBIT, finance cost and dividends. The build process derives P/E, P/B, ROE, margin, interest cover, dividend yield, payout ratio and growth using the latest saved NSE price where appropriate.</p></article><article class="panel premium-card caution-panel"><span class="kicker">GUARDRAILS</span><h2>Missing evidence reduces confidence</h2><p>A security can have a market price without having enough verified financial evidence for a dependable model view. Governance flags can also override an otherwise strong quantitative score.</p></article></section>
+
+<section class="principles-grid reveal"><article class="principle premium-card"><span>01</span><b>Evidence before score</b><p>No source, no false confidence.</p></article><article class="principle premium-card"><span>02</span><b>Business before momentum</b><p>A rising price cannot substitute for weak fundamentals.</p></article><article class="principle premium-card"><span>03</span><b>Comparison before action</b><p>A score becomes more useful when you compare alternatives.</p></article><article class="principle premium-card"><span>04</span><b>Reassess when facts change</b><p>New results and announcements can change the thesis.</p></article></section>
 {% endblock %}

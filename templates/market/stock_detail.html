@@ -2,77 +2,53 @@
 {% block title %}{{ stock.company }} · NSE Insight{% endblock %}
 {% block heading %}{{ stock.company }}{% endblock %}
 {% block content %}
-<section class="stock-hero">
-  <div>
-    <span class="pill">{{ stock.signal }}</span>
-    <p>{{ stock.sector }} · {{ stock.isin }}</p>
-    <strong>KES {{ stock.price|floatformat:2 }}</strong>
-    <small>Latest recorded close</small>
+<nav class="subnav reveal"><a href="#decision">Decision brief</a><a href="#numbers">Key numbers</a><a href="#thesis">Investment thesis</a><a href="#evidence">Evidence</a><a href="#model">Model breakdown</a></nav>
+
+<section class="decision-stage tone-{{ brief.tone }} premium-card reveal" id="decision">
+  <div class="decision-main">
+    <div class="decision-meta"><span class="signal-badge large">{{ stock.signal }}</span><span>{{ stock.sector }}</span><span>•</span><span>KES {{ stock.price|floatformat:2 }}</span></div>
+    <span class="kicker">PLAIN-ENGLISH MODEL VIEW</span>
+    <h2>{{ brief.stance }}</h2>
+    <p>{{ brief.headline }}</p>
+    <div class="confidence-strip {{ brief.confidence.class }}"><b>Confidence {{ brief.confidence.label }}</b><span>{{ brief.confidence.plain }}</span></div>
+    <div class="decision-actions"><a class="button button-primary" href="{% url 'market:compare' %}?a={{ stock.ticker }}">Compare this stock</a><a class="button button-ghost inverse" href="#thesis">See what must go right</a></div>
   </div>
-  <div class="hero-score">
-    <b>{{ stock.overall_score }}</b>
-    <span>overall score</span>
-  </div>
+  <div class="score-gauge" style="--score:{{ brief.score }}"><div><b>{{ brief.score }}</b><span>MODEL SCORE</span></div></div>
 </section>
 
-<section class="metrics compact">
-  <article>
-    <span>Suggested entry zone</span>
-    <strong>{{ stock.suggested_entry_low }}–{{ stock.suggested_entry_high }}</strong>
-    <small>Reference, not an order</small>
+<section class="story-grid reveal">
+  <article class="panel premium-card positive-panel">
+    <div class="panel-title"><span class="panel-icon">↗</span><div><span class="kicker">WHY IT STANDS OUT</span><h2>What the model likes</h2></div></div>
+    {% for item in brief.why %}<div class="reason-card"><div><b>{{ item.factor }}</b><span>{{ item.score }}/100</span></div><p>{{ item.explanation }}</p></div>{% endfor %}
   </article>
-  <article>
-    <span>Review below</span>
-    <strong>KES {{ stock.review_below }}</strong>
-    <small>Reassess the thesis</small>
-  </article>
-  <article>
-    <span>Evidence coverage</span>
-    <strong>{{ stock.data_completeness_pct|floatformat:0 }}%</strong>
-    <small>Verified fundamentals coverage</small>
+  <article class="panel premium-card caution-panel">
+    <div class="panel-title"><span class="panel-icon">!</span><div><span class="kicker">WHY YOU MAY WAIT</span><h2>What could weaken the case</h2></div></div>
+    {% for item in brief.reasons_to_wait %}<div class="reason-card"><div><b>{{ item.factor }}</b></div><p>{{ item.explanation }}</p></div>{% endfor %}
   </article>
 </section>
 
-{% if stock.source_url %}
-<section class="panel evidence-source">
-  <p class="eyebrow">FUNDAMENTAL EVIDENCE</p>
-  <h2>Source record</h2>
-  <p>
-    <b>Financial period:</b> {{ stock.financial_period|default:"Not recorded" }}<br>
-    <b>Source:</b> {{ stock.source_name|default:"Issuer / official filing" }}<br>
-    <b>Source type:</b> {{ stock.source_type|default:"Financial result" }}<br>
-    <b>Verified on:</b> {{ stock.verified_on|default:"Not recorded" }}
-  </p>
-  <p><a href="{{ stock.source_url }}" target="_blank" rel="noopener noreferrer">Open source document ↗</a></p>
+<section class="money-lab premium-card reveal">
+  <div><span class="kicker">MAKE IT TANGIBLE</span><h2>What KES {{ brief.example.amount|floatformat:0 }} looks like</h2><p>At the recorded price of <b>KES {{ brief.example.price|floatformat:2 }}</b>, this example amount could buy about <b>{{ brief.example.shares }} shares</b>, using approximately <b>KES {{ brief.example.invested|floatformat:0 }}</b>.</p>{% if brief.example.annual_dividend %}<p>If the recorded dividend were repeated, that holding would imply roughly <b>KES {{ brief.example.annual_dividend|floatformat:0 }}</b> in annual gross dividends before taxes and fees. This is an illustration, not a forecast.</p>{% else %}<p>There is not enough verified dividend evidence to estimate annual dividend income.</p>{% endif %}</div>
+  <form method="get" class="calculator-card"><label>Try another amount</label><div><span>KES</span><input type="number" name="amount" min="1000" step="1000" value="{{ amount|floatformat:0 }}"></div><button class="button button-primary">Recalculate</button></form>
 </section>
-{% else %}
-<section class="panel insight caution">
-  <p class="eyebrow">FUNDAMENTAL EVIDENCE</p>
-  <p>No verified fundamental source is attached to this security yet. Quantitative buy signals remain restricted by evidence coverage.</p>
-</section>
-{% endif %}
 
-<section class="factor-grid">
-  <div class="panel">
-    <p class="eyebrow">FACTOR BREAKDOWN</p>
-    <h2>Why it ranks here</h2>
-    {% for f in factors %}
-      <div class="factor">
-        <span>{{ f.name }} <small>{{ f.weight }}% weight</small></span>
-        <b>{{ f.score }}</b>
-        <i style="--score:{{ f.score }}%"></i>
-      </div>
-    {% endfor %}
-  </div>
-  <div>
-    <div class="panel insight positive">
-      <p class="eyebrow">SUPPORTING EVIDENCE</p>
-      <p>{{ stock.positives }}</p>
-    </div>
-    <div class="panel insight caution">
-      <p class="eyebrow">RISKS & CHECKS</p>
-      <p>{{ stock.risks }}</p>
-    </div>
-  </div>
+<section class="panel premium-card reveal" id="numbers">
+  <div class="panel-head"><div><span class="kicker">FINANCE, TRANSLATED</span><h2>Numbers that matter — in ordinary language</h2></div></div>
+  <div class="translation-grid">{% for n in brief.key_numbers %}<article class="translation-card"><span>{{ n.label }}</span><strong>{{ n.value }}</strong><p>{{ n.plain }}</p></article>{% endfor %}</div>
+</section>
+
+<section class="story-grid reveal" id="thesis">
+  <article class="panel premium-card thesis-panel"><span class="kicker">WHAT MUST GO RIGHT</span><h2>The case only works if…</h2><ol class="thesis-list">{% for item in brief.what_must_go_right %}<li><span>{{ forloop.counter }}</span><p>{{ item }}</p></li>{% endfor %}</ol></article>
+  <article class="panel premium-card thesis-panel risk"><span class="kicker">WHAT BREAKS THE THESIS</span><h2>Review or walk away if…</h2><ol class="thesis-list">{% for item in brief.thesis_breakers %}<li><span>{{ forloop.counter }}</span><p>{{ item }}</p></li>{% endfor %}</ol></article>
+</section>
+
+<section class="evidence-panel premium-card reveal" id="evidence">
+  <div><span class="kicker">EVIDENCE TRACE</span><h2>Where the conclusion comes from</h2><p>Evidence coverage: <b>{{ stock.data_completeness_pct|floatformat:0 }}%</b>. A higher number means more of the financial inputs expected by the model are actually present.</p></div>
+  {% if stock.source_url %}<div class="source-card"><span>Financial period</span><b>{{ stock.financial_period|default:"Not recorded" }}</b><span>Source</span><b>{{ stock.source_name|default:"Issuer / official filing" }}</b><span>Verified</span><b>{{ stock.verified_on|default:"Not recorded" }}</b><a class="text-link" href="{{ stock.source_url }}" target="_blank" rel="noopener noreferrer">Open source document ↗</a></div>{% else %}<div class="source-card missing"><b>No verified fundamental source attached yet.</b><p>Treat the conclusion as incomplete until a source record is available.</p></div>{% endif %}
+</section>
+
+<section class="panel premium-card reveal" id="model">
+  <div class="panel-head"><div><span class="kicker">MODEL BREAKDOWN</span><h2>How the total score was built</h2><p>Each factor is scored independently, then combined using the model weights.</p></div></div>
+  <div class="factor-board">{% for f in factors %}<article class="factor-card"><div><span>{{ f.name }}</span><small>{{ f.weight }}% weight</small></div><strong>{{ f.score }}</strong><i><em style="width:{{ f.score }}%"></em></i></article>{% endfor %}</div>
 </section>
 {% endblock %}

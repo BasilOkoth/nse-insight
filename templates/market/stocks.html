@@ -1,1 +1,41 @@
-{% extends 'base.html' %}{% block title %}Stock Screener · NSE Insight{% endblock %}{% block heading %}Stock screener{% endblock %}{% block content %}<form class="filters" method="get"><input name="q" value="{{ query }}" placeholder="Search company"><select name="sector"><option value="">All sectors</option>{% for s in sectors %}<option {% if s == selected_sector %}selected{% endif %}>{{ s }}</option>{% endfor %}</select><select name="signal"><option value="">All signals</option>{% for s in signals %}<option {% if s == selected_signal %}selected{% endif %}>{{ s }}</option>{% endfor %}</select><button class="button">Apply filters</button></form><div class="panel"><div class="table-wrap"><table><thead><tr><th>Company</th><th>Price</th><th>Move</th><th>Quality</th><th>Value</th><th>Dividend</th><th>Liquidity</th><th>Signal</th><th>Score</th></tr></thead><tbody>{% for stock in stocks %}<tr><td><a class="stock-name" href="{% url 'market:stock_detail' stock.ticker %}">{{ stock.company }}</a><small>{{ stock.sector }}</small></td><td>KES {{ stock.price|floatformat:2 }}</td><td>{{ stock.daily_change_pct|default_if_none:'—' }}%</td><td>{{ stock.quality_score }}</td><td>{{ stock.value_score }}</td><td>{{ stock.dividend_score }}</td><td>{{ stock.liquidity_score }}</td><td><span class="pill">{{ stock.signal }}</span></td><td><b>{{ stock.overall_score }}</b></td></tr>{% empty %}<tr><td colspan="9">No matching stocks.</td></tr>{% endfor %}</tbody></table></div></div>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Stock Intelligence · NSE Insight{% endblock %}
+{% block heading %}Stock intelligence{% endblock %}
+{% block content %}
+<section class="page-intro reveal">
+  <div><span class="kicker">SCREEN THE MARKET</span><h2>Find the strongest research cases, then ask why.</h2><p>Scores are a starting point. Evidence coverage and the stock-specific explanation determine how much confidence to place in them.</p></div>
+  <a class="button button-soft" href="{% url 'market:compare' %}">Compare any two stocks</a>
+</section>
+
+<form class="filter-bar glass reveal" method="get">
+  <label class="search-field"><span>⌕</span><input name="q" value="{{ query }}" placeholder="Search company" data-live-search autocomplete="off"></label>
+  <select name="sector"><option value="">All sectors</option>{% for s in sectors %}<option {% if s == selected_sector %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+  <select name="signal"><option value="">All model views</option>{% for s in signals %}<option {% if s == selected_signal %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+  <button class="button button-primary">Apply</button>
+  <button class="icon-button density-toggle" type="button" title="Toggle table density">≡</button>
+</form>
+
+<section class="panel premium-card table-panel reveal">
+  <div class="table-toolbar"><div><span class="kicker">MARKET TABLE</span><h3>All matching securities</h3></div><div class="table-hint">Tip: click a company for the plain-English research brief.</div></div>
+  <div class="table-wrap premium-table-wrap">
+    <table class="premium-table" id="stockTable">
+      <thead><tr><th data-sort="text">Company</th><th data-sort="number">Price</th><th data-sort="number">Move</th><th data-sort="number">Quality</th><th data-sort="number">Value</th><th data-sort="number">Dividend</th><th data-sort="number">Liquidity</th><th>Model view</th><th data-sort="number">Score</th></tr></thead>
+      <tbody>
+      {% for stock in stocks %}
+        <tr data-stock-row data-name="{{ stock.company|lower }} {{ stock.sector|lower }}">
+          <td><a class="company-cell" href="{% url 'market:stock_detail' stock.ticker %}"><span class="company-avatar">{{ stock.company|slice:':1' }}</span><span><b>{{ stock.company }}</b><small>{{ stock.sector }}</small></span></a></td>
+          <td data-value="{{ stock.price }}"><b>KES {{ stock.price|floatformat:2 }}</b></td>
+          <td data-value="{{ stock.daily_change_pct|default_if_none:'0' }}"><span class="move-chip">{{ stock.daily_change_pct|default_if_none:'—' }}%</span></td>
+          <td data-value="{{ stock.quality_score }}"><div class="mini-score"><span>{{ stock.quality_score }}</span><i><em style="width:{{ stock.quality_score }}%"></em></i></div></td>
+          <td data-value="{{ stock.value_score }}"><div class="mini-score"><span>{{ stock.value_score }}</span><i><em style="width:{{ stock.value_score }}%"></em></i></div></td>
+          <td data-value="{{ stock.dividend_score }}"><div class="mini-score"><span>{{ stock.dividend_score }}</span><i><em style="width:{{ stock.dividend_score }}%"></em></i></div></td>
+          <td data-value="{{ stock.liquidity_score }}"><div class="mini-score"><span>{{ stock.liquidity_score }}</span><i><em style="width:{{ stock.liquidity_score }}%"></em></i></div></td>
+          <td><span class="signal-badge">{{ stock.signal }}</span></td>
+          <td data-value="{{ stock.overall_score }}"><span class="score-orb" style="--score:{{ stock.overall_score }}">{{ stock.overall_score }}</span></td>
+        </tr>
+      {% empty %}<tr><td colspan="9"><div class="empty-state"><b>No matching stocks.</b><span>Try removing one of the filters.</span></div></td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

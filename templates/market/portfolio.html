@@ -1,1 +1,19 @@
-{% extends 'base.html' %}{% block title %}Portfolio Idea · NSE Insight{% endblock %}{% block heading %}Portfolio idea{% endblock %}{% block content %}<form class="amount-form" method="get"><div><label>Available amount</label><span>KES</span><input type="number" name="amount" min="1000" step="5000" value="{{ amount|floatformat:0 }}"></div><button class="button">Build allocation</button></form>{% if has_allocation %}<div class="panel"><div class="table-wrap"><table><thead><tr><th>Company</th><th>Signal</th><th>Score</th><th>Allocation</th><th>Amount</th><th>Shares</th><th>Cash</th></tr></thead><tbody>{% for item in allocation %}<tr><td>{{ item.company }}</td><td><span class="pill">{{ item.signal }}</span></td><td>{{ item.overall_score }}</td><td>{{ item.allocation_pct }}%</td><td>KES {{ item.allocation_kes|floatformat:0 }}</td><td>{{ item.shares }}</td><td>KES {{ item.cash_left_kes|floatformat:0 }}</td></tr>{% endfor %}</tbody></table></div></div>{% else %}<div class="empty"><span>⌁</span><h2>Hold cash for now</h2><p>No stock passes the evidence, liquidity and score thresholds. The system will not manufacture an allocation merely because money is available.</p><a href="{% url 'market:methodology' %}" class="button secondary">See decision rules</a></div>{% endif %}{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Portfolio Lab · NSE Insight{% endblock %}
+{% block heading %}Portfolio lab{% endblock %}
+{% block content %}
+<section class="page-intro reveal"><div><span class="kicker">ALLOCATION ILLUSTRATION</span><h2>Turn a cash amount into a disciplined research basket.</h2><p>The portfolio engine only uses stocks that pass its score, evidence and liquidity gates, and it keeps a cash buffer rather than forcing every shilling into the market.</p></div></section>
+
+<form class="portfolio-builder premium-card reveal" method="get"><div><label>Amount to model</label><div class="currency-input"><span>KES</span><input type="number" name="amount" min="1000" step="5000" value="{{ amount|floatformat:0 }}"></div></div><div class="portfolio-rule"><span>Built-in discipline</span><b>Up to 5 positions · liquidity gate · evidence gate · cash buffer</b></div><button class="button button-primary">Build allocation</button></form>
+
+{% if has_allocation %}
+<section class="allocation-grid reveal">
+  {% for item in allocation %}
+  <article class="allocation-card premium-card"><div class="allocation-top"><span class="company-avatar">{{ item.company|slice:':1' }}</span><div><h3>{{ item.company }}</h3><span class="signal-badge">{{ item.signal }}</span></div><div class="allocation-pct">{{ item.allocation_pct }}%</div></div><div class="allocation-amount">KES {{ item.allocation_kes|floatformat:0 }}</div><div class="allocation-track"><i style="width:{{ item.allocation_pct }}%"></i></div><div class="allocation-meta"><span>Shares <b>{{ item.shares }}</b></span><span>Model score <b>{{ item.overall_score }}</b></span></div></article>
+  {% endfor %}
+</section>
+<section class="panel premium-card reveal"><div class="panel-head"><div><span class="kicker">ALLOCATION TABLE</span><h2>Exact illustration</h2></div></div><div class="table-wrap"><table class="premium-table"><thead><tr><th>Company</th><th>Signal</th><th>Score</th><th>Allocation</th><th>Amount</th><th>Shares</th><th>Cash left</th></tr></thead><tbody>{% for item in allocation %}<tr><td><b>{{ item.company }}</b></td><td><span class="signal-badge">{{ item.signal }}</span></td><td>{{ item.overall_score }}</td><td>{{ item.allocation_pct }}%</td><td>KES {{ item.allocation_kes|floatformat:0 }}</td><td>{{ item.shares }}</td><td>KES {{ item.cash_left_kes|floatformat:0 }}</td></tr>{% endfor %}</tbody></table></div></section>
+{% else %}
+<section class="empty-state large premium-card reveal"><span class="empty-icon">◌</span><b>Hold cash for now</b><p>No stock currently passes all the evidence, liquidity and score thresholds. The system will not manufacture an allocation simply because money is available.</p><a href="{% url 'market:methodology' %}" class="button button-soft">See the decision rules</a></section>
+{% endif %}
+{% endblock %}

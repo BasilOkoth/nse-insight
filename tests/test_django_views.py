@@ -10,5 +10,5 @@ from django.test import Client
 
 def test_core_pages_render():
     client = Client()
-    for url in ["/", "/stocks/", "/portfolio/", "/methodology/", "/api/market/"]:
+    for url in ["/", "/stocks/", "/compare/", "/portfolio/", "/methodology/", "/api/market/"]:
         assert client.get(url).status_code == 200

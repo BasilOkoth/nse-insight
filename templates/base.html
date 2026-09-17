@@ -1,3 +1,77 @@
-{% load static %}<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{% block title %}NSE Insight{% endblock %}</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="{% static 'css/app.css' %}"></head><body>
-<aside class="sidebar"><a class="brand" href="{% url 'market:dashboard' %}"><span>N</span>NSE <b>Insight</b></a><p class="eyebrow">PRIVATE MARKET INTELLIGENCE</p><nav><a href="{% url 'market:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Overview</a><a href="{% url 'market:stocks' %}" class="{% if request.resolver_match.url_name == 'stocks' or request.resolver_match.url_name == 'stock_detail' %}active{% endif %}">Stock screener</a><a href="{% url 'market:portfolio' %}" class="{% if request.resolver_match.url_name == 'portfolio' %}active{% endif %}">Portfolio idea</a><a href="{% url 'market:methodology' %}" class="{% if request.resolver_match.url_name == 'methodology' %}active{% endif %}">Methodology</a></nav><div class="sidebar-foot"><i></i>NSE data · {{ as_of }}<small>Evidence before action</small></div></aside>
-<main><header class="topbar"><div><p class="eyebrow">NAIROBI SECURITIES EXCHANGE</p><h1>{% block heading %}Market overview{% endblock %}</h1></div><form method="post" action="{% url 'market:refresh' %}">{% csrf_token %}<button class="button secondary">Refresh NSE data</button></form></header>{% for message in messages %}<div class="alert {{ message.tags }}">{{ message }}</div>{% endfor %}{% if not evidence_ready %}<div class="warning"><b>Market prices are available; fundamental evidence is incomplete.</b> Buy signals remain withheld until verified company results are added.</div>{% endif %}{% block content %}{% endblock %}<footer>Private decision support. Verify prices, announcements, costs and suitability before trading.</footer></main></body></html>
+{% load static %}
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <title>{% block title %}NSE Insight{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script defer src="{% static 'js/app.js' %}"></script>
+</head>
+<body>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <a class="brand" href="{% url 'market:dashboard' %}" aria-label="NSE Insight home">
+        <span class="brand-mark">NI</span>
+        <span class="brand-copy">NSE <b>Insight</b><small>Market intelligence</small></span>
+      </a>
+      <button class="icon-button mobile-only" id="closeSidebar" aria-label="Close menu">×</button>
+    </div>
+
+    <div class="data-chip"><i></i><span>Market snapshot</span><b>{{ as_of }}</b></div>
+
+    <nav class="nav-stack">
+      <a href="{% url 'market:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><span>◫</span><div>Overview<small>Market pulse</small></div></a>
+      <a href="{% url 'market:stocks' %}" class="{% if request.resolver_match.url_name == 'stocks' or request.resolver_match.url_name == 'stock_detail' %}active{% endif %}"><span>⌕</span><div>Stock intelligence<small>Screen & investigate</small></div></a>
+      <a href="{% url 'market:compare' %}" class="{% if request.resolver_match.url_name == 'compare' %}active{% endif %}"><span>⇄</span><div>Compare stocks<small>A vs B, explained</small></div></a>
+      <a href="{% url 'market:portfolio' %}" class="{% if request.resolver_match.url_name == 'portfolio' %}active{% endif %}"><span>◌</span><div>Portfolio lab<small>Allocation illustration</small></div></a>
+      <a href="{% url 'market:methodology' %}" class="{% if request.resolver_match.url_name == 'methodology' %}active{% endif %}"><span>◇</span><div>Model logic<small>How decisions are built</small></div></a>
+    </nav>
+
+    <div class="sidebar-card">
+      <span class="kicker">EVIDENCE FIRST</span>
+      <p>The model can say “not enough evidence.” That is a feature, not a failure.</p>
+    </div>
+
+    <div class="sidebar-foot">
+      <span>Private decision support</span>
+      <small>Not a guarantee or trading instruction.</small>
+    </div>
+  </aside>
+
+  <main class="app-shell">
+    <header class="topbar glass">
+      <div class="topbar-left">
+        <button class="icon-button mobile-only" id="openSidebar" aria-label="Open menu">☰</button>
+        <div>
+          <p class="eyebrow">NAIROBI SECURITIES EXCHANGE</p>
+          <h1>{% block heading %}Market overview{% endblock %}</h1>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span class="market-status"><i></i>Data ready</span>
+        <button class="icon-button" id="themeToggle" title="Toggle appearance" aria-label="Toggle appearance">◐</button>
+        <form method="post" action="{% url 'market:refresh' %}" class="refresh-form">
+          {% csrf_token %}
+          <button class="button button-ghost refresh-button"><span>↻</span> Refresh NSE data</button>
+        </form>
+      </div>
+    </header>
+
+    <section class="content-shell">
+      {% for message in messages %}<div class="alert {{ message.tags }}">{{ message }}</div>{% endfor %}
+      {% if not evidence_ready %}<div class="warning glass"><b>Prices are available, but fundamental evidence is still incomplete.</b><span>The system will reduce confidence rather than pretend missing evidence is certainty.</span></div>{% endif %}
+      {% block content %}{% endblock %}
+      <footer><span>NSE Insight</span><span>Evidence → interpretation → comparison → decision.</span><span>Verify current prices, announcements, costs, taxes and suitability before trading.</span></footer>
+    </section>
+  </main>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+</body>
+</html>
