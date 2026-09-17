@@ -133,5 +133,16 @@ def add_market_metrics(snapshot: pd.DataFrame, history: pd.DataFrame) -> pd.Data
 def merge_fundamentals(market: pd.DataFrame, fundamentals_path: Path) -> pd.DataFrame:
     if not fundamentals_path.exists():
         return market
+
     fundamentals = pd.read_csv(fundamentals_path)
+    if fundamentals.empty:
+        return market
+
+    fundamentals["ticker"] = fundamentals["ticker"].astype(str).str.strip()
+    market = market.copy()
+    market["ticker"] = market["ticker"].astype(str).str.strip()
+
+    # One evidence record per listed security. build_fundamentals.py already
+    # retains the latest financial period for each ticker.
+    fundamentals = fundamentals.drop_duplicates("ticker", keep="last")
     return market.merge(fundamentals, on="ticker", how="left", suffixes=("", "_fund"))

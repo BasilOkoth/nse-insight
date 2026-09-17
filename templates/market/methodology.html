@@ -1,1 +1,51 @@
-{% extends 'base.html' %}{% block title %}Methodology · NSE Insight{% endblock %}{% block heading %}Methodology{% endblock %}{% block content %}<section class="method-intro"><p class="eyebrow">TRANSPARENT BY DESIGN</p><h2>A recommendation should be inspectable—not magical.</h2><p>The model combines financial quality, valuation, income, growth, momentum, liquidity and downside risk. Missing evidence is uncertainty, not permission to guess.</p></section><section class="weight-grid">{% for w in weights %}<article><span>{{ w.name }}</span><strong>{{ w.value }}%</strong><i style="--score:{{ w.value }}%"></i></article>{% endfor %}</section><section class="rules"><article><b>01</b><h3>Evidence threshold</h3><p>Incomplete data cannot produce a normal buy signal.</p></article><article><b>02</b><h3>Liquidity protection</h3><p>Hard-to-trade shares are excluded from proposed allocations.</p></article><article><b>03</b><h3>Governance override</h3><p>A material governance flag overrides an attractive numerical score.</p></article><article><b>04</b><h3>Cash is a position</h3><p>If nothing qualifies, the model recommends no purchase.</p></article></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Methodology · NSE Insight{% endblock %}
+{% block heading %}Methodology{% endblock %}
+{% block content %}
+<section class="panel">
+  <p class="eyebrow">EVIDENCE-FIRST MODEL</p>
+  <h2>Prices update automatically; fundamentals require a source record.</h2>
+  <p>
+    NSE Insight separates market data from company fundamentals. Market prices and
+    volumes can be refreshed from the NSE market-statistics pages. Fundamental
+    evidence is only admitted when a row includes a financial period and an HTTPS
+    source document.
+  </p>
+</section>
+
+<section class="panel">
+  <p class="eyebrow">FUNDAMENTAL PIPELINE</p>
+  <h2>Verified report → derived ratios → score</h2>
+  <p>
+    The verified input file stores report facts such as EPS, book value per share,
+    profit, revenue, equity, EBIT, finance cost and dividends. The build script
+    derives ratios including P/E, P/B, ROE, margin, interest cover, dividend yield,
+    payout ratio and growth. P/E, P/B and dividend yield are recalculated using the
+    latest saved NSE price.
+  </p>
+</section>
+
+<section class="factor-grid">
+  <div class="panel">
+    <p class="eyebrow">FACTOR WEIGHTS</p>
+    <h2>How the score is constructed</h2>
+    {% for w in weights %}
+      <div class="factor">
+        <span>{{ w.name }}</span>
+        <b>{{ w.value }}%</b>
+        <i style="--score:{{ w.value }}%"></i>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="panel">
+    <p class="eyebrow">GUARDRAILS</p>
+    <h2>Evidence before a signal</h2>
+    <p>
+      Incomplete evidence is not treated as certainty. Securities with weak
+      fundamentals coverage remain classified as insufficient evidence even when
+      market-price information is available. Governance flags can also override
+      an otherwise strong quantitative score.
+    </p>
+  </div>
+</section>
+{% endblock %}
