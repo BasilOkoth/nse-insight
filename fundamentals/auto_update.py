@@ -311,26 +311,66 @@ def _single_metric(text: str, metric: str):
     return None
 
 
-def _line_metric(text: str, labels: list[str]) -> tuple[float | None, float | None]:
-    # PDF table extraction often yields:
-    # "Revenue 128,791 124,131"
-    # This parser intentionally requires the label and at least one nearby number.
-    lines = [re.sub(r"\s+", " ", line).strip() for line in text.splitlines()]
+def _line_metric(
+    text: str,
+    labels: list[str],
+) -> tuple[float | None, float | None]:
+    """
+    Extract current and comparative values from financial statement rows.
+
+    Labels must begin the row so that lines such as
+    'Revenue growth (%) 9.5' are not treated as Revenue.
+    """
+
+    lines = [
+        re.sub(r"\s+", " ", line).strip()
+        for line in text.splitlines()
+    ]
+
     for line in lines:
         low = line.lower()
-        if not any(label in low for label in labels):
+
+        matched_label = None
+
+        for label in labels:
+            pattern = rf"^\s*{re.escape(label)}\b"
+
+            if re.search(pattern, low):
+                matched_label = label
+                break
+
+        if matched_label is None:
             continue
-        values = re.findall(NUMBER, line)
+
+        remainder = line[len(matched_label):].strip()
+
+        if remainder.lower().startswith(
+            ("growth", "margin", "per share", "ratio")
+        ):
+            continue
+
+        values = re.findall(NUMBER, remainder)
+
         nums = [_number(v) for v in values]
         nums = [v for v in nums if v is not None]
 
-        # Remove obvious year tokens.
-        nums = [v for v in nums if not (1900 <= abs(v) <= 2100 and float(v).is_integer())]
+        nums = [
+            v
+            for v in nums
+            if not (
+                1900 <= abs(v) <= 2100
+                and float(v).is_integer()
+            )
+        ]
+
         if not nums:
             continue
+
         current = nums[0]
         prior = nums[1] if len(nums) > 1 else None
+
         return current, prior
+
     return None, None
 
 
