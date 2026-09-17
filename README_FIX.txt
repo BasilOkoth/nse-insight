@@ -1,17 +1,37 @@
-NSE Insight Render Fix
+NSE Insight - Runtime Isolation Fix
 
-Replace these files in your repository:
+Why this second fix exists
+--------------------------
+The /health/ endpoint is now returning HTTP 200, but Gunicorn workers still
+exit with code 139 (SIGSEGV) a few seconds later. That means the lightweight
+Django health endpoint itself is working, while the process hosting it is
+crashing at the server/runtime layer.
+
+This package therefore makes two targeted changes:
+
+1. Pin Render to Python 3.13.15 instead of relying on the platform default.
+2. Replace Gunicorn with Waitress 3.0.2 for this deployment.
+
+Waitress is a pure-Python WSGI server, which removes Gunicorn's forked worker
+process from the equation and gives us a clean diagnostic path.
+
+Replace these files in the repository:
+- requirements.txt
 - render.yaml
+
+Add this new file at the repository root:
+- .python-version
+
+Keep the previous /health/ and lazy-import changes already made to:
 - nse_insight/urls.py
 - market/views.py
 
-Changes:
-- Gunicorn reduced to 1 worker / 1 thread.
-- Added lightweight /health/ endpoint.
-- Render health check moved from / to /health/.
-- OpenMP/OpenBLAS/MKL/NumExpr thread counts limited to 1.
-- Pandas/NumPy-heavy imports moved out of Django startup and into the views that need them.
-- Added max-requests and jitter.
+Then commit/push and redeploy on Render.
 
-No changes were made to requirements.txt, analysis_engine.py, nse_data.py,
-templates, scoring logic, or data files.
+Expected healthy behavior:
+- /health/ returns 200
+- no repeating "Worker ... was sent code 139!" lines
+- the service remains listening on $PORT
+
+If the service stays up but only crashes when opening the dashboard, the next
+target is the Pandas/NumPy/lxml analytics stack rather than the web server.

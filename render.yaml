@@ -6,7 +6,7 @@ services:
 
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
 
-    startCommand: gunicorn nse_insight.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 1 --timeout 120 --max-requests 200 --max-requests-jitter 30
+    startCommand: waitress-serve --listen=0.0.0.0:$PORT --threads=1 nse_insight.wsgi:application
 
     healthCheckPath: /health/
 
@@ -15,13 +15,21 @@ services:
     envVars:
       - key: SECRET_KEY
         generateValue: true
+
       - key: DEBUG
         value: "0"
+
+      - key: PYTHON_VERSION
+        value: "3.13.15"
+
       - key: OMP_NUM_THREADS
         value: "1"
+
       - key: OPENBLAS_NUM_THREADS
         value: "1"
+
       - key: MKL_NUM_THREADS
         value: "1"
+
       - key: NUMEXPR_NUM_THREADS
         value: "1"
