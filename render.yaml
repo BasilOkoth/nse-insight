@@ -1,63 +1,41 @@
-name: Update verified fundamentals
+services:
+  - type: web
+    name: nse-insight
+    runtime: python
+    plan: free
 
-on:
-  workflow_dispatch:
-  schedule:
-    # Sundays 05:20 East Africa Time (02:20 UTC)
-    - cron: "20 2 * * 0"
+    buildCommand: >
+      pip install -r requirements.txt &&
+      python manage.py collectstatic --noinput
 
-permissions:
-  contents: write
+    startCommand: >
+      waitress-serve
+      --listen=0.0.0.0:$PORT
+      --threads=1
+      nse_insight.wsgi:application
 
-concurrency:
-  group: update-verified-fundamentals
-  cancel-in-progress: false
+    healthCheckPath: /health/
 
-jobs:
-  update:
-    runs-on: ubuntu-latest
+    autoDeploy: true
 
-    env:
-      PYTHONPATH: ${{ github.workspace }}
-      DJANGO_SETTINGS_MODULE: nse_insight.settings
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
 
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+      - key: DEBUG
+        value: "0"
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-          cache: "pip"
+      - key: PYTHON_VERSION
+        value: "3.13.15"
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - key: OMP_NUM_THREADS
+        value: "1"
 
-      # Test the code BEFORE spending 15+ minutes collecting reports
-      - name: Run tests before collection
-        run: python -m pytest -q
+      - key: OPENBLAS_NUM_THREADS
+        value: "1"
 
-      - name: Discover reports and update fundamentals
-        run: python auto_fundamentals.py
+      - key: MKL_NUM_THREADS
+        value: "1"
 
-      # Validate again after the generated evidence files change
-      - name: Validate generated fundamentals
-        run: python -m pytest -q
-
-      - name: Commit changed evidence files
-        run: |
-          git config user.name "nse-insight-bot"
-          git config user.email "actions@users.noreply.github.com"
-
-          git add data/fundamental_sources.csv
-          git add data/fundamentals_review_queue.csv
-          git add data/fundamentals_raw.csv
-          git add data/fundamentals.csv
-
-          if git diff --cached --quiet; then
-            echo "No fundamentals changes."
-          else
-            git commit -m "Update verified NSE fundamentals"
-            git push
-          fi
+      - key: NUMEXPR_NUM_THREADS
+        value: "1"
